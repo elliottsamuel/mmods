@@ -1,0 +1,211 @@
+Fetching distribution.
+Downloading https://services.gradle.org/distributions/gradle-9.7.1-bin.zip
+..............10%..............20%...............30%..............40%...............50%..............60%...............70%..............80%..............90%...............100%
+
+Welcome to Gradle 9.7.1!
+
+Here are the highlights of this release:
+ - Isolated Projects graduates to incubating
+ - Broader Configuration Cache compatibility
+ - Resilient Sync helps you fix broken builds
+ - More source locations in problem reports
+
+For more details see https://docs.gradle.org/9.7.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as no cached configuration is available for tasks: build
+
+> Configure project :
+Fabric Loom: 1.18.4
+
+> Task :compileJava NO-SOURCE
+> Task :processClientResources
+> Task :processIncludeJars
+> Task :validateAccessWidener NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :sourcesJar
+> Task :processResources
+> Task :classes
+
+> Task :compileClientJava
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Tracker.java:11: error: cannot find symbol
+import net.minecraft.world.entity.EntityTypes;
+                                 ^
+  symbol:   class EntityTypes
+  location: package net.minecraft.world.entity
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Tracker.java:206: error: cannot find symbol
+		for (Entity e : level.getEntities((Entity) null, box, e -> e.getType() == EntityTypes.ZOMBIE)) {
+		                                                                          ^
+  symbol:   variable EntityTypes
+  location: class Tracker
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:171: error: cannot find symbol
+		popupTimer = CraftingGuide.isCraftingScreen(mc.gui.screen()) ? PENDING : FLASH_TICKS - 4;
+		                                                  ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:217: error: cannot find symbol
+			if (mc.gui.screen() == null) Flow.welcome();
+			          ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:230: error: cannot find symbol
+					mc.gui.toastManager().addToast(new ProgressToast(net.minecraft.world.item.Items.OAK_LOG,
+					      ^
+  symbol:   method toastManager()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:238: error: cannot find symbol
+			if (popupTimer == PENDING && mc.gui.screen() == null) popupTimer = 8;
+			                                   ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:241: error: cannot find symbol
+				if (mc.gui.screen() == null) Flow.currentStep();
+				          ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:243: error: cannot find symbol
+			boolean canCheck = mc.gui.screen() == null || CraftingGuide.isCraftingScreen(mc.gui.screen());
+			                         ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:243: error: cannot find symbol
+			boolean canCheck = mc.gui.screen() == null || CraftingGuide.isCraftingScreen(mc.gui.screen());
+			                                                                                   ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:253: error: cannot find symbol
+		if (mc.gui.screen() == null && ++tipTimer >= nextTipAt) {
+		          ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:260: error: cannot find symbol
+		if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.DeathScreen) died = true;
+		          ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:261: error: cannot find symbol
+		else if (died && mc.gui.screen() == null && mc.player.isAlive()) {
+		                       ^
+  symbol:   method screen()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:279: error: cannot find symbol
+		mc.gui.toastManager().addToast(new TipToast(tip));
+		      ^
+  symbol:   method toastManager()
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Flow.java:15: error: cannot find symbol
+	private static void open(TabletScreen s) { Minecraft.getInstance().gui.setScreen(s); }
+	                                                                      ^
+  symbol:   method setScreen(TabletScreen)
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Flow.java:16: error: cannot find symbol
+	private static void close() { Minecraft.getInstance().gui.setScreen(null); }
+	                                                         ^
+  symbol:   method setScreen(<null>)
+  location: variable gui of type Gui
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/TabletScreen.java:211: error: cannot find symbol
+		Minecraft.getInstance().gui.setScreen(null);
+		                           ^
+  symbol:   method setScreen(<null>)
+  location: variable gui of type Gui
+16 errors
+
+> Task :compileClientJava FAILED
+
+[Incubating] Problems report is available at: file:///home/runner/work/mmods/mmods/find-your-path/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileClientJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Tracker.java:11: error: cannot find symbol
+  import net.minecraft.world.entity.EntityTypes;
+                                   ^
+    symbol:   class EntityTypes
+    location: package net.minecraft.world.entity
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Tracker.java:206: error: cannot find symbol
+  		for (Entity e : level.getEntities((Entity) null, box, e -> e.getType() == EntityTypes.ZOMBIE)) {
+  		                                                                          ^
+    symbol:   variable EntityTypes
+    location: class Tracker
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:171: error: cannot find symbol
+  		popupTimer = CraftingGuide.isCraftingScreen(mc.gui.screen()) ? PENDING : FLASH_TICKS - 4;
+  		                                                  ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:217: error: cannot find symbol
+  			if (mc.gui.screen() == null) Flow.welcome();
+  			          ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:230: error: cannot find symbol
+  					mc.gui.toastManager().addToast(new ProgressToast(net.minecraft.world.item.Items.OAK_LOG,
+  					      ^
+    symbol:   method toastManager()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:238: error: cannot find symbol
+  			if (popupTimer == PENDING && mc.gui.screen() == null) popupTimer = 8;
+  			                                   ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:241: error: cannot find symbol
+  				if (mc.gui.screen() == null) Flow.currentStep();
+  				          ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:243: error: cannot find symbol
+  			boolean canCheck = mc.gui.screen() == null || CraftingGuide.isCraftingScreen(mc.gui.screen());
+  			                         ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:243: error: cannot find symbol
+  			boolean canCheck = mc.gui.screen() == null || CraftingGuide.isCraftingScreen(mc.gui.screen());
+  			                                                                                   ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:253: error: cannot find symbol
+  		if (mc.gui.screen() == null && ++tipTimer >= nextTipAt) {
+  		          ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:260: error: cannot find symbol
+  		if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.DeathScreen) died = true;
+  		          ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:261: error: cannot find symbol
+  		else if (died && mc.gui.screen() == null && mc.player.isAlive()) {
+  		                       ^
+    symbol:   method screen()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:279: error: cannot find symbol
+  		mc.gui.toastManager().addToast(new TipToast(tip));
+  		      ^
+    symbol:   method toastManager()
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Flow.java:15: error: cannot find symbol
+  	private static void open(TabletScreen s) { Minecraft.getInstance().gui.setScreen(s); }
+  	                                                                      ^
+    symbol:   method setScreen(TabletScreen)
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/Flow.java:16: error: cannot find symbol
+  	private static void close() { Minecraft.getInstance().gui.setScreen(null); }
+  	                                                         ^
+    symbol:   method setScreen(<null>)
+    location: variable gui of type Gui
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/TabletScreen.java:211: error: cannot find symbol
+  		Minecraft.getInstance().gui.setScreen(null);
+  		                           ^
+    symbol:   method setScreen(<null>)
+    location: variable gui of type Gui
+  16 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 30s
+5 actionable tasks: 5 executed
+Configuration cache entry stored.
