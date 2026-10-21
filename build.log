@@ -1,0 +1,77 @@
+Fetching distribution.
+Downloading https://services.gradle.org/distributions/gradle-9.7.1-bin.zip
+..............10%..............20%...............30%..............40%...............50%..............60%...............70%..............80%..............90%...............100%
+
+Welcome to Gradle 9.7.1!
+
+Here are the highlights of this release:
+ - Isolated Projects graduates to incubating
+ - Broader Configuration Cache compatibility
+ - Resilient Sync helps you fix broken builds
+ - More source locations in problem reports
+
+For more details see https://docs.gradle.org/9.7.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as no cached configuration is available for tasks: build
+
+> Configure project :
+Fabric Loom: 1.18.4
+
+> Task :compileJava NO-SOURCE
+> Task :processIncludeJars
+> Task :processClientResources
+> Task :validateAccessWidener NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :sourcesJar
+> Task :processResources
+> Task :classes
+
+> Task :compileClientJava
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:7: error: package org.lwjgl.glfw does not exist
+import org.lwjgl.glfw.GLFW;
+                     ^
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:69: error: cannot find symbol
+				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, KeyMapping.Category.register(id("main"))));
+				                   ^
+  symbol:   variable KEYSYM
+  location: class Type
+/home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:69: error: cannot find symbol
+				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, KeyMapping.Category.register(id("main"))));
+				                            ^
+  symbol:   variable GLFW
+  location: class FindYourPathClient
+3 errors
+
+> Task :compileClientJava FAILED
+
+[Incubating] Problems report is available at: file:///home/runner/work/mmods/mmods/find-your-path/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileClientJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:69: error: cannot find symbol
+  				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, KeyMapping.Category.register(id("main"))));
+  				                   ^
+    symbol:   variable KEYSYM
+    location: class Type
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:69: error: cannot find symbol
+  				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, KeyMapping.Category.register(id("main"))));
+  				                            ^
+    symbol:   variable GLFW
+    location: class FindYourPathClient
+  /home/runner/work/mmods/mmods/find-your-path/src/client/java/com/findyourpath/client/FindYourPathClient.java:7: error: package org.lwjgl.glfw does not exist
+  import org.lwjgl.glfw.GLFW;
+                       ^
+  3 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 30s
+5 actionable tasks: 5 executed
+Configuration cache entry stored.
