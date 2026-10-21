@@ -175,20 +175,22 @@ public final class CraftingGuide {
 		}
 
 		// coaching panel
-		int pw = 132, x = 6, y = 6, pad = 12;
+		int pw = 140, x = 6, y = 6, pad = 10;
 		List<FormattedCharSequence> title = Ui.wrap(font, st.title(), pw - pad * 2);
 		List<FormattedCharSequence> msg = Ui.wrap(font, rd.message(), pw - pad * 2);
-		int ph = pad + 11 + (justDone ? 11 : 0) + title.size() * 10 + 5 + msg.size() * 10 + pad;
-		Ui.smallTablet(g, x, y, pw, ph);
+		int ph = pad + 11 + 8 + (justDone ? 11 : 0) + title.size() * 10 + 5 + msg.size() * 10 + pad;
+		Ui.smallPanel(g, x, y, pw, ph, role.color());
 		int cy = y + pad;
 		if (justDone) {
-			Ui.carved(g, font, "✔ Step done!", x + pad, cy, 0xFF2F6B1F);
+			Ui.text(g, font, "✔ Step done!", x + pad, cy, Ui.GREEN);
 			cy += 11;
 		}
-		Ui.carved(g, font, role.name() + " " + (stepIndex + 1) + "/" + role.steps().size(), x + pad, cy, Ui.ink(role.color()));
+		Ui.text(g, font, role.name().toUpperCase() + "  " + (stepIndex + 1) + "/" + role.steps().size(), x + pad, cy, role.color());
 		cy += 11;
-		for (FormattedCharSequence l : title) { Ui.carved(g, font, l, x + pad, cy, Ui.INK); cy += 10; }
+		Ui.progressBar(g, x + pad, cy, pw - pad * 2, stepIndex + 1, role.steps().size(), role.color());
+		cy += 8;
+		for (FormattedCharSequence l : title) { Ui.text(g, font, l, x + pad, cy, Ui.WHITE); cy += 10; }
 		cy += 5;
-		for (FormattedCharSequence l : msg) { Ui.carved(g, font, l, x + pad, cy, Ui.INK_SOFT); cy += 10; }
+		for (FormattedCharSequence l : msg) { Ui.text(g, font, l, x + pad, cy, Ui.SOFT); cy += 10; }
 	}
 }

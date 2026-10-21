@@ -38,9 +38,9 @@ public class TipToast implements Toast {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, Font font, long fullyVisibleForMs) {
-		Ui.sprite(g, Ui.PLAQUE, 0, 0, 230, 32);
-		g.item(new ItemStack(tip.icon()), 10, 8);
-		Ui.carved(g, font, "Tip: " + tip.title(), 32, 7, 0xFF6B4A12);
-		Ui.carved(g, font, tip.text(), 32, 18, Ui.INK_SOFT);
+		Ui.smallPanel(g, 1, 1, 228, 30, Ui.LIME);
+		g.item(new ItemStack(tip.icon()), 9, 8);
+		Ui.text(g, font, "TIP: " + tip.title(), 32, 7, Ui.LIME);
+		Ui.text(g, font, tip.text(), 32, 18, Ui.SOFT);
 	}
 }

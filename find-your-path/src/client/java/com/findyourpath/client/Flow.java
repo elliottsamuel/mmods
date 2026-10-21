@@ -16,7 +16,7 @@ public final class Flow {
 	/** What G opens: always the welcome screen. */
 	public static void welcome() {
 		open(new TabletScreen()
-				.heading(Items.COMPASS, "Welcome to Find Your Path", Ui.GOLD)
+				.heading(Items.COMPASS, "Welcome to Find Your Path", Ui.WHITE)
 				.para("A guide for new players: pick a play style and learn Minecraft one small step at a time.")
 				.button("▶ Continue", Flow::afterWelcome)
 				.button("Close", Flow::close).columns(2));
@@ -36,11 +36,29 @@ public final class Flow {
 
 	public static void menu() {
 		TabletScreen s = new TabletScreen()
-				.heading(Items.COMPASS, "Choose your path", Ui.GOLD)
-				.para("Minecraft has no single goal. You choose what kind of fun to have. Tap a path to learn what it is. You can switch anytime.");
-		for (Role r : Quests.ROLES) s.button(r.name(), () -> about(r));
+				.header("Find Your Path", Ui.CYAN)
+				.para("Minecraft has no single goal. You choose what kind of fun to have. Pick a path to learn about it, or browse tips.");
+		for (Role r : Quests.ROLES) s.tile(r.name(), r.icon(), r.color(), () -> about(r));
+		s.tile("Tips", Items.GLOWSTONE_DUST, Ui.LIME, () -> tips(0));
 		s.button("Close", Flow::close);
 		open(s);
+	}
+
+	/** Browse all the tips, one per page, each with a little picture. */
+	public static void tips(int index) {
+		int n = Quests.TIPS.size();
+		int i = ((index % n) + n) % n;
+		Quests.Tip t = Quests.TIPS.get(i);
+		open(new TabletScreen()
+				.header("Tips  \u00B7  " + (i + 1) + " of " + n, Ui.LIME)
+				.progress(i + 1, n)
+				.heading(t.icon(), t.title(), Ui.WHITE)
+				.para(t.text(), Ui.SOFT)
+				.picture(t.picture())
+				.button("\u25C0 Prev", () -> tips(i - 1))
+				.button("Menu", Flow::menu)
+				.button("Next \u25B6", () -> tips(i + 1))
+				.columns(3));
 	}
 
 	public static void about(Role r) {
@@ -86,7 +104,7 @@ public final class Flow {
 
 	public static void complete(Role r) {
 		TabletScreen s = new TabletScreen()
-				.header("Quest complete!", Ui.GOLD)
+				.header("Quest complete!", Ui.GREEN)
 				.heading(r.icon(), "You tried being a " + r.name() + "!", r.color())
 				.para("How did that feel? There's no wrong answer. The point is to find the kind of fun that's yours.")
 				.para("Ideas for what " + r.name() + "s do next:", Ui.WHITE);

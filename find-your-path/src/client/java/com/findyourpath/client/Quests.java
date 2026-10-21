@@ -18,7 +18,12 @@ public final class Quests {
 	public record Role(String id, String name, int color, Item icon, String tagline, List<String> about,
 			String goal, List<Step> steps, List<String> next) {}
 
-	public record Tip(String title, String text, Item icon) {}
+	/** One element of a tip picture: either an item drawn big, or a glyph like an arrow. */
+	public record Pic(Item item, String glyph, int color) {}
+	static Pic i(Item item) { return new Pic(item, null, 0); }
+	static Pic g(String glyph, int color) { return new Pic(null, glyph, color); }
+
+	public record Tip(String title, String text, Item icon, List<Pic> picture) {}
 
 	// --- recipe helpers (4 items = the 2x2 inventory grid, 9 items = the 3x3 crafting table; read left-to-right, top-to-bottom; null = empty)
 	private static final Item P = Items.OAK_PLANKS, S = Items.STICK, C = Items.COBBLESTONE, L = Items.OAK_LOG;
@@ -143,19 +148,33 @@ public final class Quests {
 			List.of("Breed two animals (cows love wheat)", "Build a fenced pen for your animals", "Trade with a villager"))
 	);
 
+	private static final int ARROW = 0xFF4FE3FF, NO = 0xFFFF5A6E, YES = 0xFF5CFFA1, WARN = 0xFFFFC547;
+
 	public static final List<Tip> TIPS = List.of(
-		new Tip("Shelter before sunset", "Monsters come out at night.", Items.OAK_DOOR),
-		new Tip("Beds skip the night", "They also set your respawn point.", Items.CLOCK),
-		new Tip("Pickaxe before sword", "You need it to mine stone.", Items.WOODEN_PICKAXE),
-		new Tip("Light keeps monsters away", "Torches stop them spawning nearby.", Items.TORCH),
-		new Tip("Never dig straight down", "You could fall into lava.", Items.LAVA_BUCKET),
-		new Tip("Hear a hiss? Run!", "A creeper is about to explode.", Items.CREEPER_HEAD),
-		new Tip("A full belly heals you", "Hearts refill when you're well fed.", Items.COOKED_BEEF),
-		new Tip("Mark your way home", "It's easy to get lost.", Items.COMPASS),
-		new Tip("Chests keep your stuff safe", "You drop everything when you die.", Items.CHEST),
-		new Tip("Use the recipe book", "The green book shows what you can craft.", Items.KNOWLEDGE_BOOK),
-		new Tip("Don't stare at Endermen", "Eye contact makes them attack.", Items.ENDER_PEARL),
-		new Tip("Watch your step", "Falling from high up hurts.", Items.FEATHER)
+		new Tip("Shelter before sunset", "Monsters come out at night.", Items.OAK_DOOR,
+			List.of(i(Items.CLOCK), g("\u2192", ARROW), i(Items.ZOMBIE_HEAD), g("\u2192", ARROW), i(Items.OAK_DOOR))),
+		new Tip("Beds skip the night", "They also set your respawn point.", Items.CLOCK,
+			List.of(g("Zzz", ARROW), g("\u2192", ARROW), i(Items.CLOCK), g("\u2600", WARN))),
+		new Tip("Pickaxe before sword", "You need it to mine stone.", Items.WOODEN_PICKAXE,
+			List.of(i(Items.WOODEN_PICKAXE), g("\u2192", ARROW), i(Items.COBBLESTONE), g("\u2192", ARROW), i(Items.STONE_SWORD))),
+		new Tip("Light keeps monsters away", "Torches stop them spawning nearby.", Items.TORCH,
+			List.of(i(Items.TORCH), i(Items.TORCH), g("\u2716", NO), i(Items.ZOMBIE_HEAD))),
+		new Tip("Never dig straight down", "You could fall into lava.", Items.LAVA_BUCKET,
+			List.of(i(Items.WOODEN_PICKAXE), g("\u2193", NO), g("?", WARN), g("\u2193", NO), i(Items.LAVA_BUCKET))),
+		new Tip("Hear a hiss? Run!", "A creeper is about to explode.", Items.CREEPER_HEAD,
+			List.of(i(Items.CREEPER_HEAD), g("sss", YES), i(Items.TNT), g("\u2190", WARN), g("!", WARN))),
+		new Tip("A full belly heals you", "Hearts refill when you're well fed.", Items.COOKED_BEEF,
+			List.of(i(Items.COOKED_BEEF), i(Items.BREAD), g("\u2192", ARROW), g("\u2764", NO), g("\u2764", NO))),
+		new Tip("Mark your way home", "It's easy to get lost.", Items.COMPASS,
+			List.of(i(Items.TORCH), g("\u00B7\u00B7\u00B7", ARROW), i(Items.TORCH), g("\u00B7\u00B7\u00B7", ARROW), i(Items.COMPASS))),
+		new Tip("Chests keep your stuff safe", "You drop everything when you die.", Items.CHEST,
+			List.of(i(Items.DIAMOND), i(Items.IRON_INGOT), g("\u2192", ARROW), i(Items.CHEST), g("\u2714", YES))),
+		new Tip("Use the recipe book", "The green book shows what you can craft.", Items.KNOWLEDGE_BOOK,
+			List.of(i(Items.KNOWLEDGE_BOOK), g("\u2192", ARROW), i(Items.CRAFTING_TABLE), g("\u2192", ARROW), i(Items.WOODEN_PICKAXE))),
+		new Tip("Don't stare at Endermen", "Eye contact makes them attack.", Items.ENDER_PEARL,
+			List.of(i(Items.ENDER_EYE), g("\u2716", NO), i(Items.ENDER_PEARL), g("\u2192", ARROW), g("\u2193", YES))),
+		new Tip("Watch your step", "Falling from high up hurts.", Items.FEATHER,
+			List.of(i(Items.FEATHER), g("\u2193", WARN), g("\u2193", WARN), g("\u2192", ARROW), g("\u2764", NO)))
 	);
 
 	public static Role role(String id) {
