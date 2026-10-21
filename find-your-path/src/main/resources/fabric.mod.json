@@ -1,0 +1,21 @@
+{
+	"schemaVersion": 1,
+	"id": "findyourpath",
+	"version": "${version}",
+	"name": "Find Your Path",
+	"description": "A friendly guide for brand-new players: pick a play style and learn Minecraft one small step at a time.",
+	"authors": ["Elliott Lemberger"],
+	"contact": {"sources": "https://github.com/elliottsamuel/mmods"},
+	"license": "All-Rights-Reserved",
+	"icon": "assets/findyourpath/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": ["com.findyourpath.client.FindYourPathClient"]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
