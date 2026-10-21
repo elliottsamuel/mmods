@@ -23,6 +23,7 @@ public final class SaveData {
 
 	public Map<String, WorldProgress> worlds = new HashMap<>();
 	public Set<String> seenTips = new HashSet<>();
+	public boolean seenDeathInfo;
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static Path file() { return FabricLoader.getInstance().getConfigDir().resolve("findyourpath.json"); }

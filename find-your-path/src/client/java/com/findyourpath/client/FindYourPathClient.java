@@ -50,6 +50,8 @@ public class FindYourPathClient implements ClientModInitializer {
 
 	// timers (ticks)
 	private static final int FLASH_TICKS = 36, PENDING = -2;
+	private static int lastLogs = -1;
+	private static boolean died;
 	private static int checkTimer, popupTimer = -1, flashTimer, tipTimer, nextTipAt = 1200;
 
 	public static Identifier id(String path) {
@@ -180,6 +182,20 @@ public class FindYourPathClient implements ClientModInitializer {
 
 		if (role != null) {
 			tracker.tick();
+			// log pop-ups while collecting wood
+			Step cur = currentStep();
+			if (cur != null && cur.title().equals("Get 3 logs")) {
+				int logs = tracker.countLogs();
+				if (lastLogs >= 0 && logs > lastLogs && logs <= 3) {
+					int left = 3 - logs;
+					mc.gui.toastManager().addToast(new ProgressToast(net.minecraft.world.item.Items.OAK_LOG,
+							logs == 1 ? "Got a log!" : "Got another log!",
+							logs + " of 3" + (left > 0 ? "  \u00B7  " + left + " to go" : "  \u00B7  done!"), role.color()));
+				}
+				lastLogs = logs;
+			} else {
+				lastLogs = -1;
+			}
 			if (popupTimer == PENDING && mc.gui.screen() == null) popupTimer = 8;
 			if (popupTimer > 0 && --popupTimer == 0) {
 				popupTimer = -1;
@@ -198,6 +214,18 @@ public class FindYourPathClient implements ClientModInitializer {
 			tipTimer = 0;
 			nextTipAt = 2400 + random.nextInt(3600);
 			showRandomTip(mc);
+		}
+
+		// first death: explain that you drop everything
+		if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.DeathScreen) died = true;
+		else if (died && mc.gui.screen() == null && mc.player.isAlive()) {
+			died = false;
+			lastLogs = -1;
+			if (!save.seenDeathInfo) {
+				save.seenDeathInfo = true;
+				save.save();
+				Flow.firstDeath();
+			}
 		}
 	}
 

@@ -79,8 +79,7 @@ public final class Flow {
 		open(new TabletScreen()
 				.header(r.name() + " Quest", r.color())
 				.heading(r.icon(), r.goal(), r.color())
-				.para(r.steps().size() + " small steps, about 5 minutes. After each step, this tablet comes back with the next one. "
-						+ "Your current step also shows above your hotbar, and next to the crafting grid.")
+				.para(r.steps().size() + " small steps, about 5 minutes.")
 				.button("Show me step 1", Flow::currentStep));
 	}
 
@@ -100,6 +99,16 @@ public final class Flow {
 				.button("Main menu", Flow::menu).columns(2);
 		s.onClose(FindYourPathClient::onStepScreenClosed);
 		open(s);
+	}
+
+	/** Shown once, the first time you die. */
+	public static void firstDeath() {
+		open(new TabletScreen()
+				.header("You died", 0xFFFF5A6E)
+				.heading(Items.CHEST, "When you die, you drop everything you were carrying.", Ui.WHITE)
+				.para("Your items are lying on the ground where you died. Go back within about 5 minutes to pick them up, or they disappear for good.")
+				.para("If you lost things you needed for your quest, like logs, you'll just need to collect them again.", Ui.MUTED)
+				.button("Got it", Flow::close));
 	}
 
 	public static void complete(Role r) {
