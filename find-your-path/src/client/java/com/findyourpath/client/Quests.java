@@ -145,7 +145,7 @@ public final class Quests {
 
 	public static final List<Tip> TIPS = List.of(
 		new Tip("Shelter before sunset", "Monsters come out at night.", Items.OAK_DOOR),
-		new Tip("Beds skip the night", "They also set your respawn point.", Items.RED_BED),
+		new Tip("Beds skip the night", "They also set your respawn point.", Items.CLOCK),
 		new Tip("Pickaxe before sword", "You need it to mine stone.", Items.WOODEN_PICKAXE),
 		new Tip("Light keeps monsters away", "Torches stop them spawning nearby.", Items.TORCH),
 		new Tip("Never dig straight down", "You could fall into lava.", Items.LAVA_BUCKET),

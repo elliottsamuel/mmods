@@ -7,7 +7,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -91,7 +91,16 @@ public final class Tracker {
 	public boolean hasDoor() { return count(ItemTags.WOODEN_DOORS) > 0; }
 	public boolean hasPressurePlate() { return count(ItemTags.WOODEN_PRESSURE_PLATES) > 0; }
 	public boolean hasHoe() { return count(ItemTags.HOES) > 0; }
-	public boolean hasFlower() { return count(ItemTags.SMALL_FLOWERS) > 0; }
+	private static final Item[] FLOWERS = {net.minecraft.world.item.Items.POPPY, net.minecraft.world.item.Items.DANDELION,
+			net.minecraft.world.item.Items.CORNFLOWER, net.minecraft.world.item.Items.OXEYE_DAISY, net.minecraft.world.item.Items.AZURE_BLUET,
+			net.minecraft.world.item.Items.ALLIUM, net.minecraft.world.item.Items.BLUE_ORCHID, net.minecraft.world.item.Items.LILY_OF_THE_VALLEY,
+			net.minecraft.world.item.Items.RED_TULIP, net.minecraft.world.item.Items.ORANGE_TULIP, net.minecraft.world.item.Items.WHITE_TULIP,
+			net.minecraft.world.item.Items.PINK_TULIP};
+
+	public boolean hasFlower() {
+		for (Item f : FLOWERS) if (has(f)) return true;
+		return false;
+	}
 
 	// ---- counters
 	public double sprinted() { return sprintDist; }
@@ -126,7 +135,7 @@ public final class Tracker {
 	// ---- training zombie
 	private Entity findTrainingZombie() {
 		AABB box = player.getBoundingBox().inflate(48);
-		for (Entity e : level.getEntities((Entity) null, box, e -> e.getType() == EntityType.ZOMBIE)) {
+		for (Entity e : level.getEntities((Entity) null, box, e -> e.getType() == EntityTypes.ZOMBIE)) {
 			if (e.hasCustomName() && ZOMBIE_NAME.equals(e.getCustomName().getString())) return e;
 		}
 		return null;
