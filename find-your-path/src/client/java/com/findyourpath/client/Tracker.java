@@ -72,6 +72,8 @@ public final class Tracker {
 			ItemStack s = inv.getItem(i);
 			if (s.is(item)) n += s.getCount();
 		}
+		ItemStack held = player.containerMenu.getCarried();   // the item on your mouse cursor counts too
+		if (held.is(item)) n += held.getCount();
 		return n;
 	}
 
@@ -82,10 +84,19 @@ public final class Tracker {
 			ItemStack s = inv.getItem(i);
 			if (s.is(tag)) n += s.getCount();
 		}
+		ItemStack held = player.containerMenu.getCarried();
+		if (held.is(tag)) n += held.getCount();
 		return n;
 	}
 
 	public boolean has(Item item) { return count(item) > 0; }
+
+	/** Counts an ingredient the way recipes do: any planks for planks, any log for logs. */
+	public int countMatching(Item want) {
+		if (want == net.minecraft.world.item.Items.OAK_PLANKS) return countPlanks();
+		if (want == net.minecraft.world.item.Items.OAK_LOG) return countLogs();
+		return count(want);
+	}
 	public int countLogs() { return count(ItemTags.LOGS); }
 	public int countPlanks() { return count(ItemTags.PLANKS); }
 	public boolean hasDoor() { return count(ItemTags.WOODEN_DOORS) > 0; }

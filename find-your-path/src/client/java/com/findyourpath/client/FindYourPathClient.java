@@ -49,7 +49,7 @@ public class FindYourPathClient implements ClientModInitializer {
 	private static boolean zombieSpawnedForStep;
 
 	// timers (ticks)
-	private static final int FLASH_TICKS = 36;
+	private static final int FLASH_TICKS = 36, PENDING = -2;
 	private static int checkTimer, popupTimer = -1, flashTimer, tipTimer, nextTipAt = 1200;
 
 	public static Identifier id(String path) {
@@ -69,7 +69,9 @@ public class FindYourPathClient implements ClientModInitializer {
 		// helper panel next to the crafting grid
 		ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
 			if (screen instanceof InventoryScreen || screen instanceof CraftingScreen) {
-				ScreenEvents.afterExtract(screen).register((s, g, mx, my, delta) -> drawCraftingHelper(g, s.width, s.height));
+				ScreenEvents.afterExtract(screen).register((s, g, mx, my, delta) -> {
+					if (role != null) CraftingGuide.draw(s, g, role, stepIndex, tracker, flashTimer > 0);
+				});
 			}
 		});
 	}
@@ -128,7 +130,8 @@ public class FindYourPathClient implements ClientModInitializer {
 		mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.0f));
 		beginStep();
 		persist();
-		popupTimer = FLASH_TICKS - 4; // show the next step once the check is carved
+		// in the crafting screen the guide panel shows the next step live; the tablet waits until it's closed
+		popupTimer = CraftingGuide.isCraftingScreen(mc.gui.screen()) ? PENDING : FLASH_TICKS - 4;
 	}
 
 	private static void persist() {
@@ -177,11 +180,13 @@ public class FindYourPathClient implements ClientModInitializer {
 
 		if (role != null) {
 			tracker.tick();
+			if (popupTimer == PENDING && mc.gui.screen() == null) popupTimer = 8;
 			if (popupTimer > 0 && --popupTimer == 0) {
 				popupTimer = -1;
 				if (mc.gui.screen() == null) Flow.currentStep();
 			}
-			if (popupTimer < 0 && mc.gui.screen() == null && ++checkTimer >= 5) {
+			boolean canCheck = mc.gui.screen() == null || CraftingGuide.isCraftingScreen(mc.gui.screen());
+			if (popupTimer < 0 && canCheck && ++checkTimer >= 5) {
 				checkTimer = 0;
 				Step st = currentStep();
 				if (st != null && st.check().test(tracker)) advance();
@@ -240,25 +245,4 @@ public class FindYourPathClient implements ClientModInitializer {
 		return "";
 	}
 
-	// ------------------------------------------------------------------ helper beside the crafting grid
-	private static void drawCraftingHelper(GuiGraphicsExtractor g, int screenW, int screenH) {
-		Step st = currentStep();
-		if (st == null) return;
-		Font font = Minecraft.getInstance().font;
-		int pw = 126, x = 6, y = 6, pad = 12;
-		List<FormattedCharSequence> title = Ui.wrap(font, st.title(), pw - pad * 2);
-		List<FormattedCharSequence> how = st.recipe() == null ? Ui.wrap(font, st.howTo(), pw - pad * 2) : List.of();
-		int ph = pad + 11 + title.size() * 10 + 4 + (st.recipe() != null ? Ui.recipeH(st.recipe()) + 6 : how.size() * 10) + pad;
-		Ui.smallTablet(g, x, y, pw, ph);
-		int cy = y + pad;
-		Ui.carved(g, font, role.name() + " " + (stepIndex + 1) + "/" + role.steps().size(), x + pad, cy, Ui.ink(role.color()));
-		cy += 11;
-		for (FormattedCharSequence l : title) { Ui.carved(g, font, l, x + pad, cy, Ui.INK); cy += 10; }
-		cy += 4;
-		if (st.recipe() != null) {
-			Ui.recipe(g, font, x + (pw - Ui.recipeW(st.recipe())) / 2, cy, st.recipe(), st.icon());
-		} else {
-			for (FormattedCharSequence l : how) { Ui.carved(g, font, l, x + pad, cy, Ui.INK_SOFT); cy += 10; }
-		}
-	}
 }
