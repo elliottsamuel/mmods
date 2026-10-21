@@ -2,82 +2,126 @@ package com.findyourpath.client;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/** Drawing helpers: the stone tablet, the recipe grid, progress pips. Plain colored shapes only, no textures. */
+/** Drawing helpers for the carved-stone look: tablet art, engraved text, carved slots, notches and the carved checkmark. */
 public final class Ui {
 	private Ui() {}
 
+	// bright colors, for text drawn over the world (HUD)
 	public static final int WHITE = 0xFFFFFFFF;
 	public static final int SOFT = 0xFFE0E0E0;
 	public static final int MUTED = 0xFFB8B8B8;
 	public static final int GOLD = 0xFFFFAA00;
 	public static final int GREEN = 0xFF55FF55;
 
-	/** A carved stone tablet: dark outline, beveled rim, speckled stone face. */
-	public static void tablet(GuiGraphicsExtractor g, int x, int y, int w, int h) {
-		g.fill(x - 3, y - 3, x + w + 3, y + h + 3, 0xFF141414);      // outline
-		g.fill(x - 2, y - 2, x + w + 2, y + h + 2, 0xFF3A3A3A);      // rim
-		g.fill(x, y, x + w, y + h, 0xFF5E5E5E);                      // face
-		// speckles, same pattern every frame
-		long seed = 0x5DEECE66DL;
-		for (int py = y + 2; py < y + h - 4; py += 4) {
-			for (int px = x + 2; px < x + w - 4; px += 4) {
-				seed = seed * 6364136223846793005L + 1442695040888963407L;
-				int r = (int) ((seed >>> 33) & 15);
-				if (r < 3) g.fill(px, py, px + 4, py + 4, 0xFF555555);
-				else if (r < 5) g.fill(px, py, px + 4, py + 4, 0xFF686868);
-			}
-		}
-		// bevel: light top/left, dark bottom/right
-		g.fill(x, y, x + w, y + 2, 0xFF8A8A8A);
-		g.fill(x, y, x + 2, y + h, 0xFF8A8A8A);
-		g.fill(x, y + h - 2, x + w, y + h, 0xFF3F3F3F);
-		g.fill(x + w - 2, y, x + w, y + h, 0xFF3F3F3F);
+	// ink colors, for text engraved into stone
+	public static final int INK = 0xFF26241F;
+	public static final int INK_SOFT = 0xFF3A3731;
+	public static final int INK_MUTED = 0xFF57534B;
+	public static final int ENGRAVE_LIGHT = 0xFFBDBBB2;
+	public static final int GOLD_INLAY = 0xFFC9962E;
+
+	public static final Identifier TABLET = FindYourPathClient.id("tablet");
+	public static final Identifier TABLET_SMALL = FindYourPathClient.id("tablet_small");
+	public static final Identifier PLAQUE = FindYourPathClient.id("plaque");
+	public static final Identifier BUTTON = FindYourPathClient.id("button");
+	public static final Identifier BUTTON_HOVER = FindYourPathClient.id("button_hover");
+	public static final Identifier SLOT = FindYourPathClient.id("slot");
+
+	public static void sprite(GuiGraphicsExtractor g, Identifier id, int x, int y, int w, int h) {
+		g.blitSprite(RenderPipelines.GUI_TEXTURED, id, x, y, w, h);
 	}
 
-	/** A recessed panel inside the tablet, used behind the recipe. */
-	public static void inset(GuiGraphicsExtractor g, int x, int y, int w, int h) {
-		g.fill(x, y, x + w, y + h, 0xFF4A4A4A);
-		g.fill(x, y, x + w, y + 1, 0xFF333333);
-		g.fill(x, y, x + 1, y + h, 0xFF333333);
-		g.fill(x, y + h - 1, x + w, y + h, 0xFF7A7A7A);
-		g.fill(x + w - 1, y, x + w, y + h, 0xFF7A7A7A);
+	public static void tablet(GuiGraphicsExtractor g, int x, int y, int w, int h) { sprite(g, TABLET, x, y, w, h); }
+	public static void smallTablet(GuiGraphicsExtractor g, int x, int y, int w, int h) { sprite(g, TABLET_SMALL, x, y, w, h); }
+
+	/** Bright UI colors become darker "ink" so they read as carved into the stone. */
+	public static int ink(int color) {
+		if (color == WHITE) return INK;
+		if (color == SOFT) return INK_SOFT;
+		if (color == MUTED) return INK_MUTED;
+		int r = (color >> 16) & 0xFF, gr = (color >> 8) & 0xFF, b = color & 0xFF;
+		return 0xFF000000 | ((int) (r * .45) << 16) | ((int) (gr * .45) << 8) | (int) (b * .45);
 	}
 
-	/** One inventory-style slot, 18x18. */
-	public static void slot(GuiGraphicsExtractor g, int x, int y) {
-		g.fill(x, y, x + 18, y + 18, 0xFF8B8B8B);
-		g.fill(x, y, x + 17, y + 1, 0xFF373737);
-		g.fill(x, y, x + 1, y + 17, 0xFF373737);
-		g.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
-		g.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
+	/** Engraved text: dark letters with a pale lip just below, like a chisel cut catching light. */
+	public static void carved(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color) {
+		g.text(font, s, x, y + 1, ENGRAVE_LIGHT, false);
+		g.text(font, s, x, y, color, false);
 	}
 
-	public static final int RECIPE_W = 3 * 18 + 22 + 18, RECIPE_H = 3 * 18;
+	public static void carved(GuiGraphicsExtractor g, Font font, FormattedCharSequence s, int x, int y, int color) {
+		g.text(font, s, x, y + 1, ENGRAVE_LIGHT, false);
+		g.text(font, s, x, y, color, false);
+	}
 
-	/** 3x3 crafting grid with an arrow and the result. */
+	public static void carvedCentered(GuiGraphicsExtractor g, Font font, String s, int cx, int y, int color) {
+		carved(g, font, s, cx - font.width(s) / 2, y, color);
+	}
+
+	public static void carvedCentered(GuiGraphicsExtractor g, Font font, FormattedCharSequence s, int cx, int y, int color) {
+		carved(g, font, s, cx - font.width(s) / 2, y, color);
+	}
+
+	// ---- recipe grid (2x2 for the inventory, 3x3 for the crafting table)
+	public static int gridSize(Item[] grid) { return grid.length == 4 ? 2 : 3; }
+	public static int recipeW(Item[] grid) { return gridSize(grid) * 18 + 22 + 18; }
+	public static int recipeH(Item[] grid) { return gridSize(grid) * 18; }
+
 	public static void recipe(GuiGraphicsExtractor g, Font font, int x, int y, Item[] grid, Item result) {
-		for (int i = 0; i < 9; i++) {
-			int sx = x + (i % 3) * 18, sy = y + (i / 3) * 18;
-			slot(g, sx, sy);
+		int n = gridSize(grid);
+		for (int i = 0; i < grid.length; i++) {
+			int sx = x + (i % n) * 18, sy = y + (i / n) * 18;
+			sprite(g, SLOT, sx, sy, 18, 18);
 			if (grid[i] != null) g.item(new ItemStack(grid[i]), sx + 1, sy + 1);
 		}
-		g.text(font, "→", x + 3 * 18 + 6, y + 23, WHITE, true);
-		slot(g, x + 3 * 18 + 22, y + 18);
-		g.item(new ItemStack(result), x + 3 * 18 + 23, y + 19);
+		int mid = y + (n * 18) / 2;
+		carved(g, font, "→", x + n * 18 + 7, mid - 4, INK);
+		sprite(g, SLOT, x + n * 18 + 22, mid - 9, 18, 18);
+		g.item(new ItemStack(result), x + n * 18 + 23, mid - 8);
 	}
 
-	/** Small squares showing progress: green done, yellow current, dark to do. */
-	public static void pips(GuiGraphicsExtractor g, int x, int y, int current, int total) {
+	/** Notches chiselled into the stone: gold-filled when done, pale when current, dark when still to do. */
+	public static void notches(GuiGraphicsExtractor g, int x, int y, int current, int total) {
 		for (int i = 1; i <= total; i++) {
-			int c = i < current ? 0xFF55FF55 : i == current ? 0xFFFFFF55 : 0xFF2E2E2E;
-			int px = x + (i - 1) * 8;
-			g.fill(px, y, px + 6, y + 6, 0xFF141414);
-			g.fill(px + 1, y + 1, px + 5, y + 5, c);
+			int px = x + (i - 1) * 9;
+			g.fill(px, y, px + 6, y + 1, 0xFF3A3833);
+			g.fill(px, y, px + 1, y + 6, 0xFF3A3833);
+			g.fill(px + 1, y + 6, px + 7, y + 7, ENGRAVE_LIGHT);
+			g.fill(px + 6, y + 1, px + 7, y + 7, ENGRAVE_LIGHT);
+			int c = i < current ? GOLD_INLAY : i == current ? 0xFFE9E3C8 : 0xFF5F5C55;
+			g.fill(px + 1, y + 1, px + 6, y + 6, c);
 		}
 	}
 
-	public static int pipsWidth(int total) { return total * 8 - 2; }
+	public static int notchesWidth(int total) { return total * 9 - 2; }
+
+	// ---- carved checkmark, drawn stroke by stroke
+	private static final int[][] CHECK = {
+		{0, 5}, {1, 6}, {2, 7}, {3, 8}, {4, 7}, {5, 6}, {6, 5}, {7, 4}, {8, 3}, {9, 2}, {10, 1}, {11, 0}
+	};
+
+	/** Draws the first {@code progress} (0..1) of the checkmark, each cell {@code scale} px, as a groove with a gold inlay. */
+	public static void carvedCheck(GuiGraphicsExtractor g, int x, int y, int scale, float progress) {
+		int shown = Math.round(CHECK.length * Math.max(0, Math.min(1, progress)));
+		for (int i = 0; i < shown; i++) {
+			int cx = x + CHECK[i][0] * scale, cy = y + CHECK[i][1] * scale;
+			g.fill(cx, cy, cx + scale + 1, cy + scale + 1, 0xFF2E2C27);
+			g.fill(cx + 1, cy + 1, cx + scale, cy + scale, GOLD_INLAY);
+			g.fill(cx + 1, cy + scale, cx + scale + 1, cy + scale + 1, ENGRAVE_LIGHT);
+		}
+	}
+
+	public static int checkW(int scale) { return 12 * scale + 1; }
+	public static int checkH(int scale) { return 9 * scale + 1; }
+
+	public static java.util.List<FormattedCharSequence> wrap(Font font, String s, int width) {
+		return font.split(Component.literal(s), width);
+	}
 }

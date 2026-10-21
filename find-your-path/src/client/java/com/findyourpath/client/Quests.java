@@ -20,7 +20,7 @@ public final class Quests {
 
 	public record Tip(String title, String text, Item icon) {}
 
-	// --- recipe helpers (3x3 grid, read left-to-right, top-to-bottom; null = empty)
+	// --- recipe helpers (4 items = the 2x2 inventory grid, 9 items = the 3x3 crafting table; read left-to-right, top-to-bottom; null = empty)
 	private static final Item P = Items.OAK_PLANKS, S = Items.STICK, C = Items.COBBLESTONE, L = Items.OAK_LOG;
 	private static Item[] grid(Item... nine) { return nine; }
 
@@ -33,12 +33,12 @@ public final class Quests {
 			"Press E to open your inventory. Drag a log into the small 2x2 crafting grid. Planks appear on the right. Click them to take them.",
 			"One log makes 4 planks. Planks are what you'll build most tools with.",
 			"Press E and turn your logs into planks", Items.OAK_PLANKS,
-			grid(null, null, null, null, L, null, null, null, null), t -> t.countPlanks() >= 1);
+			grid(L, null, null, null), t -> t.countPlanks() >= 1);
 	static final Step TABLE = new Step("Make a crafting table",
 			"Press E again. Put a plank in all 4 squares of the small grid. Take the crafting table that appears.",
 			"The crafting table is your workbench. Almost everything is made on it.",
 			"Turn 4 planks into a crafting table", Items.CRAFTING_TABLE,
-			grid(P, P, null, P, P, null, null, null, null), t -> t.has(Items.CRAFTING_TABLE) || t.tableNearby());
+			grid(P, P, P, P), t -> t.has(Items.CRAFTING_TABLE) || t.tableNearby());
 	static final Step PLACE = new Step("Place your crafting table",
 			"Close your inventory. Pick the table in your hotbar (number keys 1-9, or scroll). Look at the ground and RIGHT-CLICK.",
 			"Then RIGHT-CLICK the table to open its bigger 3x3 grid. You'll use it next.",

@@ -49,6 +49,7 @@ public class FindYourPathClient implements ClientModInitializer {
 	private static boolean zombieSpawnedForStep;
 
 	// timers (ticks)
+	private static final int FLASH_TICKS = 36;
 	private static int checkTimer, popupTimer = -1, flashTimer, tipTimer, nextTipAt = 1200;
 
 	public static Identifier id(String path) {
@@ -114,7 +115,7 @@ public class FindYourPathClient implements ClientModInitializer {
 	private static void advance() {
 		Minecraft mc = Minecraft.getInstance();
 		stepIndex++;
-		flashTimer = 30;
+		flashTimer = FLASH_TICKS;
 		if (stepIndex >= role.steps().size()) {
 			Role done = role;
 			role = null;
@@ -127,7 +128,7 @@ public class FindYourPathClient implements ClientModInitializer {
 		mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.0f));
 		beginStep();
 		persist();
-		popupTimer = 25; // show the next step a moment later
+		popupTimer = FLASH_TICKS - 4; // show the next step once the check is carved
 	}
 
 	private static void persist() {
@@ -244,21 +245,20 @@ public class FindYourPathClient implements ClientModInitializer {
 		Step st = currentStep();
 		if (st == null) return;
 		Font font = Minecraft.getInstance().font;
-		int pw = 112, x = 6, y = 6;
-		List<FormattedCharSequence> title = font.split(Component.literal(st.title()), pw - 12);
-		List<FormattedCharSequence> how = st.recipe() == null ? font.split(Component.literal(st.howTo()), pw - 12) : List.of();
-		int ph = 8 + 10 + title.size() * 10 + 4 + (st.recipe() != null ? Ui.RECIPE_H + 8 : how.size() * 10) + 8;
-		Ui.tablet(g, x, y, pw, ph);
-		int cy = y + 6;
-		g.text(font, role.name() + " " + (stepIndex + 1) + "/" + role.steps().size(), x + 6, cy, role.color(), true);
-		cy += 10;
-		for (FormattedCharSequence l : title) { g.text(font, l, x + 6, cy, Ui.WHITE, true); cy += 10; }
+		int pw = 126, x = 6, y = 6, pad = 12;
+		List<FormattedCharSequence> title = Ui.wrap(font, st.title(), pw - pad * 2);
+		List<FormattedCharSequence> how = st.recipe() == null ? Ui.wrap(font, st.howTo(), pw - pad * 2) : List.of();
+		int ph = pad + 11 + title.size() * 10 + 4 + (st.recipe() != null ? Ui.recipeH(st.recipe()) + 6 : how.size() * 10) + pad;
+		Ui.smallTablet(g, x, y, pw, ph);
+		int cy = y + pad;
+		Ui.carved(g, font, role.name() + " " + (stepIndex + 1) + "/" + role.steps().size(), x + pad, cy, Ui.ink(role.color()));
+		cy += 11;
+		for (FormattedCharSequence l : title) { Ui.carved(g, font, l, x + pad, cy, Ui.INK); cy += 10; }
 		cy += 4;
 		if (st.recipe() != null) {
-			// shrink-free: the recipe is 94px wide, fits inside 112
-			Ui.recipe(g, font, x + (pw - Ui.RECIPE_W) / 2, cy, st.recipe(), st.icon());
+			Ui.recipe(g, font, x + (pw - Ui.recipeW(st.recipe())) / 2, cy, st.recipe(), st.icon());
 		} else {
-			for (FormattedCharSequence l : how) { g.text(font, l, x + 6, cy, Ui.SOFT, true); cy += 10; }
+			for (FormattedCharSequence l : how) { Ui.carved(g, font, l, x + pad, cy, Ui.INK_SOFT); cy += 10; }
 		}
 	}
 }
