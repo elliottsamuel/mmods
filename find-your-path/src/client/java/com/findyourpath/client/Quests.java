@@ -23,8 +23,8 @@ public final class Quests {
 	 */
 	public record Step(String title, String howTo, String tip, String bar, Item icon, Item[] recipe, Check check,
 			boolean skippable, boolean recall, int minutes) {
-		Step skippable() { return new Step(title, howTo, tip, bar, icon, recipe, check, true, recall, minutes); }
-		Step recall() { return new Step(title, howTo, tip, bar, icon, recipe, check, skippable, true, minutes); }
+		Step asSkippable() { return new Step(title, howTo, tip, bar, icon, recipe, check, true, recall, minutes); }
+		Step asRecall() { return new Step(title, howTo, tip, bar, icon, recipe, check, skippable, true, minutes); }
 	}
 
 	public interface Check extends Predicate<Tracker> {}
@@ -54,9 +54,10 @@ public final class Quests {
 	}
 
 	// --- recipe helpers (4 items = the 2x2 inventory grid, 9 items = the 3x3 crafting table; read left-to-right, top-to-bottom)
-	private static final Item P = Items.OAK_PLANKS, S = Items.STICK, C = Items.COBBLESTONE, L = Items.OAK_LOG, W = Items.WHITE_WOOL, I = Items.IRON_INGOT;
+	private static final Item P = Items.OAK_PLANKS, S = Items.STICK, C = Items.COBBLESTONE, L = Items.OAK_LOG, I = Items.IRON_INGOT;
+	static final Item W = item("white_wool", item("wool", Items.STRING));
 	private static Item[] grid(Item... cells) { return cells; }
-	static final Item BED = item("white_bed", item("bed", Items.WHITE_WOOL));
+	static final Item BED = item("white_bed", item("bed", W));
 
 	// =====================================================================================================
 	// LEVEL 1: SURVIVE YOUR FIRST DAY
@@ -96,11 +97,11 @@ public final class Quests {
 	static final Step TORCHES = step("Find coal and make torches",
 			"Look for stone with black specks (coal ore) on cliffs and in caves. Mine it with your pickaxe. Then craft: coal on top of a stick makes 4 torches.",
 			"Coal can be hard to find. If you can't spot any, it's OK to skip this step.",
-			"Find coal and make torches", Items.TORCH, grid(null, Items.COAL, null, null, S, null, null, null, null), t -> t.has(Items.TORCH)).skippable();
+			"Find coal and make torches", Items.TORCH, grid(null, Items.COAL, null, null, S, null, null, null, null), t -> t.has(Items.TORCH)).asSkippable();
 	static final Step FOOD = step("Get some food",
 			"Hit a cow, pig, chicken or sheep until it drops meat. You can also find apples by breaking oak leaves.",
 			"Eat when your hunger bar (the drumsticks) gets low: hold the food and hold RIGHT-CLICK. No animals around? You can skip this.",
-			"Get some food", Items.BEEF, null, Tracker::hasFood).skippable();
+			"Get some food", Items.BEEF, null, Tracker::hasFood).asSkippable();
 	static final Step SHELTER = step("Be inside when night falls",
 			"Make a shelter before dark: dig into a hillside, or build walls and a roof. Get inside and fill in the gap behind you.",
 			"Monsters appear in the dark. A roof over your head keeps you safe.",
@@ -141,7 +142,7 @@ public final class Quests {
 			"Make a bed so you can skip the night and set where you come back if you die.",
 			List.of(step("Get 3 wool", "Find sheep. Hit one until it drops wool. Different sheep give different colors; any color works.",
 							"If you have shears, RIGHT-CLICK a sheep to shear it instead.", "Get 3 wool from sheep",
-							Items.WHITE_WOOL, null, t -> t.countWool() >= 3),
+							W, null, t -> t.countWool() >= 3),
 					step("Make a bed", "At your crafting table: 3 wool across the top row, 3 planks across the middle row.",
 							"Place the bed and RIGHT-CLICK it at night to sleep.", "Make a bed",
 							BED, grid(W, W, W, P, P, P, null, null, null), Tracker::hasBed)),
@@ -158,7 +159,7 @@ public final class Quests {
 			"Build a small stone house with a door and light.",
 			List.of(
 				step("Make a door", "At your crafting table, fill the left two columns with planks: 6 planks.",
-						"One recipe gives you 3 doors.", "Make a door", Items.OAK_DOOR, grid(P, P, null, P, P, null, P, P, null), Tracker::hasDoor).recall(),
+						"One recipe gives you 3 doors.", "Make a door", Items.OAK_DOOR, grid(P, P, null, P, P, null, P, P, null), Tracker::hasDoor).asRecall(),
 				step("Gather 20 cobblestone", "Mine stone with your pickaxe until you have 20 cobblestone.",
 						"Stone is sturdier than dirt, and monsters can't break it.", "Gather 20 cobblestone", Items.COBBLESTONE, null,
 						t -> t.count(Items.COBBLESTONE) >= 20),
@@ -169,7 +170,7 @@ public final class Quests {
 						"RIGHT-CLICK the door to open and close it.", "Place your door", Items.OAK_DOOR, null, Tracker::doorNearby),
 				step("Light it up", "Place a torch inside your house.",
 						"No torches? Craft them: coal on top of a stick.", "Place a torch inside", Items.TORCH,
-						grid(null, Items.COAL, null, null, S, null, null, null, null), Tracker::torchNearby).recall()),
+						grid(null, Items.COAL, null, null, S, null, null, null, null), Tracker::torchNearby).asRecall()),
 			List.of("Add a roof and windows (smelt sand into glass)", "Build a tower you can see from far away", "Decorate with stairs, slabs and flowers"), 8),
 
 		new Role("explorer", "Explorer", 0xFF55FFFF, Items.COMPASS, "See what's out there: new lands, caves, oceans.",
@@ -197,12 +198,12 @@ public final class Quests {
 			List.of(
 				step("Make a stone pickaxe", "At your crafting table: 3 cobblestone across the top, 2 sticks down the middle.",
 						"You need a stone pickaxe to mine iron.", "Make a stone pickaxe", Items.STONE_PICKAXE,
-						grid(C, C, C, null, S, null, null, S, null), t -> t.has(Items.STONE_PICKAXE)).recall(),
+						grid(C, C, C, null, S, null, null, S, null), t -> t.has(Items.STONE_PICKAXE)).asRecall(),
 				step("Mine 2 iron ore", "Look for stone with orange-tan specks, usually in caves and on cliffs. Mine it with your stone pickaxe.",
 						"Iron ore drops raw iron.", "Mine 2 raw iron", Items.RAW_IRON, null, t -> t.count(Items.RAW_IRON) + t.count(Items.IRON_INGOT) >= 2),
 				step("Make a furnace", "At your crafting table: 8 cobblestone around the edge, middle empty.",
 						"You'll use it to turn raw iron into iron.", "Make a furnace", Items.FURNACE,
-						grid(C, C, C, C, null, C, C, C, C), t -> t.has(Items.FURNACE) || t.furnaceNearby()).recall(),
+						grid(C, C, C, C, null, C, C, C, C), t -> t.has(Items.FURNACE) || t.furnaceNearby()).asRecall(),
 				step("Smelt your iron", "Place the furnace and open it. Raw iron in the top slot, fuel (coal, logs or planks) in the bottom. Take the iron ingots.",
 						"Smelting takes about 10 seconds per item.", "Smelt 2 iron ingots", Items.IRON_INGOT, null, t -> t.count(Items.IRON_INGOT) >= 2),
 				step("Make an iron sword", "At your crafting table: 2 iron ingots stacked in the middle column, 1 stick under them.",
@@ -219,7 +220,7 @@ public final class Quests {
 			"Build your first machine: a door that opens by itself.",
 			List.of(
 				step("Make a door", "At your crafting table, fill the left two columns with planks: 6 planks.",
-						"One recipe gives you 3 doors.", "Make a door", Items.OAK_DOOR, grid(P, P, null, P, P, null, P, P, null), Tracker::hasDoor).recall(),
+						"One recipe gives you 3 doors.", "Make a door", Items.OAK_DOOR, grid(P, P, null, P, P, null, P, P, null), Tracker::hasDoor).asRecall(),
 				step("Make a pressure plate", "At your crafting table, put 2 planks side by side.",
 						"A pressure plate is a switch you step on.", "Make a pressure plate", Items.OAK_PRESSURE_PLATE,
 						grid(null, null, null, P, P, null, null, null, null), Tracker::hasPressurePlate),
