@@ -12,7 +12,7 @@ public class StoneButton extends Button {
 	}
 
 	@Override
-	protected void extractWidgetRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
+	protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
 		boolean hot = this.isHoveredOrFocused();
 		Ui.sprite(g, hot ? Ui.BUTTON_HOVER : Ui.BUTTON, getX(), getY(), getWidth(), getHeight());
 		var font = Minecraft.getInstance().font;

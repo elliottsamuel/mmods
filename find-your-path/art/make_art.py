@@ -108,6 +108,7 @@ def button(w, h, seed, hover):
     rnd = random.Random(seed)
     base = (122,121,114) if not hover else (150,146,128)
     img = stone_field(w, h, rnd, base)
+    face = stone_field(w, h, random.Random(seed + 99))   # what shows around the chiselled edge: the tablet's own stone
     px = img.putpixel
     top, bot, lef, rig = profile(w, rnd, 0, 1), profile(w, rnd, 0, 1), profile(h, rnd, 0, 1), profile(h, rnd, 0, 1)
     for x in range(w):
@@ -131,6 +132,10 @@ def button(w, h, seed, hover):
             if m == 1 and min(du, dl) <= min(dd, dr): px((x, y), OUTLINE+(255,))
             elif m == 1: px((x, y), shade(c, 1.35))
             elif m == 2 and min(du, dl) <= min(dd, dr): px((x, y), (222,186,96,255) if hover else shade(c, .62))
+    # fill the bitten-off edge with tablet stone so the sprite is fully opaque (it covers the vanilla button)
+    for y in range(h):
+        for x in range(w):
+            if img.getpixel((x, y))[3] == 0: px((x, y), face.getpixel((x, y)))
     return img
 
 def slot(seed):
