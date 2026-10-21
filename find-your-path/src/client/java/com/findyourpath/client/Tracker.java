@@ -2,6 +2,7 @@ package com.findyourpath.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,7 +28,9 @@ public final class Tracker {
 	// per-step counters (reset when a step starts)
 	double sprintDist, travelDist;
 	int dirtHigh = -1, dirtPlacedTotal;
-	boolean zombieSeen;
+	int cobbleHigh = -1, cobblePlacedTotal;
+	int fenceHigh = -1, fencePlacedTotal;
+	boolean zombieSeen, sawNight;
 	private double lastX = Double.NaN, lastZ;
 
 	void bind(LocalPlayer p) {
@@ -39,7 +43,12 @@ public final class Tracker {
 		travelDist = 0;
 		dirtHigh = -1;
 		dirtPlacedTotal = 0;
+		cobbleHigh = -1;
+		cobblePlacedTotal = 0;
+		fenceHigh = -1;
+		fencePlacedTotal = 0;
 		zombieSeen = false;
+		sawNight = false;
 		lastX = Double.NaN;
 	}
 
@@ -56,13 +65,35 @@ public final class Tracker {
 		lastX = x;
 		lastZ = z;
 
-		int dirt = count(net.minecraft.world.item.Items.DIRT);
+		// "placed" = how many have left your inventory since the step began
+		int dirt = count(Items.DIRT);
 		if (dirtHigh < 0 || dirt > dirtHigh) dirtHigh = dirt;
-		else if (dirt < dirtHigh) {
-			dirtPlacedTotal += dirtHigh - dirt;
-			dirtHigh = dirt;
-		}
+		else if (dirt < dirtHigh) { dirtPlacedTotal += dirtHigh - dirt; dirtHigh = dirt; }
+		int cobble = count(Items.COBBLESTONE);
+		if (cobbleHigh < 0 || cobble > cobbleHigh) cobbleHigh = cobble;
+		else if (cobble < cobbleHigh) { cobblePlacedTotal += cobbleHigh - cobble; cobbleHigh = cobble; }
+		int fences = countFences();
+		if (fenceHigh < 0 || fences > fenceHigh) fenceHigh = fences;
+		else if (fences < fenceHigh) { fencePlacedTotal += fenceHigh - fences; fenceHigh = fences; }
+		if (isNight()) sawNight = true;
 	}
+
+	// ---- time of day (26.x keeps time on the overworld "world clock")
+	public long timeOfDay() { return Math.floorMod(level.getOverworldClockTime(), 24000L); }
+	public boolean isNight() { long t = timeOfDay(); return t >= 12542 && t <= 23460; }
+	/** Real-time minutes until night (0 if it's already night). One Minecraft day is 20 real minutes. */
+	public int minutesToNight() {
+		long t = timeOfDay();
+		if (isNight()) return 0;
+		long ticks = t < 12542 ? 12542 - t : 24000 - t + 12542;
+		return (int) Math.ceil(ticks / 1200.0);
+	}
+	public boolean underRoof() { return !level.canSeeSky(player.blockPosition().above()); }
+	public boolean morningCame() { return sawNight && !isNight(); }
+
+	// ---- movement / position
+	public double height() { return player.getY(); }
+	public boolean riding() { return player.getVehicle() != null; }
 
 	// ---- inventory
 	public int count(Item item) {
@@ -108,6 +139,29 @@ public final class Tracker {
 			net.minecraft.world.item.Items.RED_TULIP, net.minecraft.world.item.Items.ORANGE_TULIP, net.minecraft.world.item.Items.WHITE_TULIP,
 			net.minecraft.world.item.Items.PINK_TULIP};
 
+	private static String idOf(ItemStack s) { return BuiltInRegistries.ITEM.getKey(s.getItem()).getPath(); }
+
+	private boolean anyMatching(java.util.function.Predicate<ItemStack> test) {
+		Inventory inv = player.getInventory();
+		for (int i = 0; i < inv.getContainerSize(); i++) if (test.test(inv.getItem(i))) return true;
+		return test.test(player.containerMenu.getCarried());
+	}
+
+	private static final java.util.Set<String> FOODS = java.util.Set.of("beef", "porkchop", "chicken", "mutton", "rabbit", "cod", "salmon",
+			"cooked_beef", "cooked_porkchop", "cooked_chicken", "cooked_mutton", "cooked_rabbit", "cooked_cod", "cooked_salmon",
+			"apple", "bread", "carrot", "potato", "baked_potato", "sweet_berries", "melon_slice", "cookie", "glow_berries");
+	private static final java.util.Set<String> COOKED = java.util.Set.of("cooked_beef", "cooked_porkchop", "cooked_chicken",
+			"cooked_mutton", "cooked_rabbit", "cooked_cod", "cooked_salmon", "baked_potato");
+
+	public boolean hasFood() { return anyMatching(s -> !s.isEmpty() && FOODS.contains(idOf(s))); }
+	public boolean hasCookedFood() { return anyMatching(s -> !s.isEmpty() && COOKED.contains(idOf(s))); }
+	public boolean hasBed() { return anyMatching(s -> !s.isEmpty() && (idOf(s).endsWith("_bed") || idOf(s).equals("bed"))); }
+	public boolean hasBoat() { return anyMatching(s -> !s.isEmpty() && (idOf(s).endsWith("_boat") || idOf(s).endsWith("_raft"))); }
+	public int countWool() { return count(ItemTags.WOOL); }
+	public int countFences() { return count(ItemTags.WOODEN_FENCES); }
+	public int cobblePlaced() { return cobblePlacedTotal; }
+	public int fencesPlaced() { return fencePlacedTotal; }
+
 	public boolean hasFlower() {
 		for (Item f : FLOWERS) if (has(f)) return true;
 		return false;
@@ -130,6 +184,9 @@ public final class Tracker {
 	}
 
 	public boolean tableNearby() { return countBlocks(6, s -> s.is(Blocks.CRAFTING_TABLE)) > 0; }
+	public boolean chestNearby() { return countBlocks(6, s -> s.is(Blocks.CHEST)) > 0; }
+	public boolean furnaceNearby() { return countBlocks(6, s -> s.is(Blocks.FURNACE)) > 0; }
+	public boolean torchNearby() { return countBlocks(6, s -> s.is(Blocks.TORCH) || s.is(Blocks.WALL_TORCH)) > 0; }
 	public boolean doorNearby() { return countBlocks(6, s -> s.is(BlockTags.WOODEN_DOORS)) > 0; }
 	public int cropsNearby() { return countBlocks(6, s -> s.is(Blocks.WHEAT)); }
 

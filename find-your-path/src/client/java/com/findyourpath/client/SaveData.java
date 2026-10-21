@@ -19,11 +19,14 @@ public final class SaveData {
 	public static final class WorldProgress {
 		public String role;
 		public int step;
+		public String returnRole;   // set while a side lesson is running
+		public int returnStep;
 	}
 
 	public Map<String, WorldProgress> worlds = new HashMap<>();
 	public Set<String> seenTips = new HashSet<>();
 	public boolean seenDeathInfo;
+	public boolean level1Done;
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static Path file() { return FabricLoader.getInstance().getConfigDir().resolve("findyourpath.json"); }

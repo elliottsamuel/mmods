@@ -47,6 +47,9 @@ public class FindYourPathClient implements ClientModInitializer {
 	private static Role role;
 	private static int stepIndex;
 	private static boolean zombieSpawnedForStep;
+	private static boolean hintShown;           // "Show me how" tapped on a recall step
+	private static Role returnRole;             // main quest to come back to after a side lesson
+	private static int returnStep;
 
 	// timers (ticks)
 	private static final int FLASH_TICKS = 36, PENDING = -2;
@@ -81,11 +84,29 @@ public class FindYourPathClient implements ClientModInitializer {
 	// ------------------------------------------------------------------ quest state
 	public static Role currentRole() { return role; }
 	public static int currentStepIndex() { return stepIndex; }
-	private static Step currentStep() { return role == null ? null : role.steps().get(stepIndex); }
+	static Step currentStep() { return role == null ? null : role.steps().get(stepIndex); }
+	public static boolean level1Done() { return save.level1Done; }
+	public static boolean hintShown() { return hintShown; }
+	static void showHint() { hintShown = true; }
+	public static Tracker tracker() { return tracker; }
+	public static Role returnRole() { return returnRole; }
+
+	/** Start a side lesson; the main quest resumes when it's done. */
+	static void startSideLesson(Role side) {
+		if (role != null && !Quests.isSideLesson(role)) { returnRole = role; returnStep = stepIndex; }
+		role = side;
+		stepIndex = 0;
+		beginStep();
+		persist();
+	}
+
+	/** Skip the current step (still counts toward unlocking). */
+	static void skipStep() { advance(); }
 
 	static void start(Role r) {
 		Minecraft mc = Minecraft.getInstance();
 		if (role != null) Tracker.removeTrainingZombie(mc);
+		returnRole = null;
 		role = r;
 		stepIndex = 0;
 		beginStep();
@@ -95,6 +116,7 @@ public class FindYourPathClient implements ClientModInitializer {
 	static void abandon() {
 		Tracker.removeTrainingZombie(Minecraft.getInstance());
 		role = null;
+		returnRole = null;
 		stepIndex = 0;
 		popupTimer = -1;
 		persist();
@@ -103,6 +125,7 @@ public class FindYourPathClient implements ClientModInitializer {
 	private static void beginStep() {
 		tracker.resetStep();
 		zombieSpawnedForStep = false;
+		hintShown = false;
 	}
 
 	/** After the player dismisses a step tablet. Spawns the Training Zombie when that's the step. */
@@ -122,10 +145,22 @@ public class FindYourPathClient implements ClientModInitializer {
 		flashTimer = FLASH_TICKS;
 		if (stepIndex >= role.steps().size()) {
 			Role done = role;
+			mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0f));
+			if (Quests.isSideLesson(done) && returnRole != null) {
+				// back to the main quest
+				role = returnRole;
+				stepIndex = returnStep;
+				returnRole = null;
+				beginStep();
+				persist();
+				popupTimer = -1;
+				Flow.sideLessonDone(done);
+				return;
+			}
 			role = null;
 			stepIndex = 0;
+			if (done == Quests.FIRST_DAY) save.level1Done = true;
 			persist();
-			mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0f));
 			Flow.complete(done);
 			return;
 		}
@@ -143,6 +178,8 @@ public class FindYourPathClient implements ClientModInitializer {
 			SaveData.WorldProgress p = new SaveData.WorldProgress();
 			p.role = role.id();
 			p.step = stepIndex;
+			p.returnRole = returnRole == null ? null : returnRole.id();
+			p.returnStep = returnStep;
 			save.worlds.put(worldKey, p);
 		}
 		save.save();
@@ -169,6 +206,8 @@ public class FindYourPathClient implements ClientModInitializer {
 			SaveData.WorldProgress p = save.worlds.get(worldKey);
 			role = p == null ? null : Quests.role(p.role);
 			stepIndex = role == null ? 0 : Math.min(p.step, role.steps().size() - 1);
+			returnRole = p == null || p.returnRole == null ? null : Quests.role(p.returnRole);
+			returnStep = p == null ? 0 : p.returnStep;
 			beginStep();
 			popupTimer = -1;
 		}
@@ -202,6 +241,7 @@ public class FindYourPathClient implements ClientModInitializer {
 				if (mc.gui.screen() == null) Flow.currentStep();
 			}
 			boolean canCheck = mc.gui.screen() == null || CraftingGuide.isCraftingScreen(mc.gui.screen());
+			// (skippable/recall steps check the same way; skipping is a button on the step screen)
 			if (popupTimer < 0 && canCheck && ++checkTimer >= 5) {
 				checkTimer = 0;
 				Step st = currentStep();
@@ -247,8 +287,14 @@ public class FindYourPathClient implements ClientModInitializer {
 		int w = g.guiWidth(), h = g.guiHeight();
 
 		if (flashTimer > 0) {
-			String done = "✔ Done!";
-			g.centeredText(font, done, w / 2, h / 2 - 30, Ui.GREEN);
+			int s = 3, cw = Ui.checkW(s), ch = Ui.checkH(s);
+			int pw = Math.max(cw, font.width("STEP DONE")) + 40, ph = ch + 40;
+			int px = (w - pw) / 2, py = h / 2 - ph - 20;
+			int accent = role != null ? role.color() : Ui.GREEN;
+			Ui.smallPanel(g, px, py, pw, ph, accent);
+			float progress = (FLASH_TICKS - flashTimer) / 8f;
+			Ui.check(g, px + (pw - cw) / 2, py + 12, s, progress, Ui.GREEN);
+			Ui.textCentered(g, font, "STEP DONE", px + pw / 2, py + ph - 16, Ui.WHITE);
 		}
 
 		String line;
@@ -266,7 +312,15 @@ public class FindYourPathClient implements ClientModInitializer {
 	}
 
 	private static String progressSuffix(Step st) {
-		if (st.title().equals("Travel 200 blocks")) return "  (" + Math.min(200, (int) tracker.travelled()) + "/200)";
+		if (st.title().equals("Travel 300 blocks")) return "  (" + Math.min(300, (int) tracker.travelled()) + "/300)";
+		if (st.title().equals("Be inside when night falls")) {
+			int m = tracker.minutesToNight();
+			return m > 0 ? "  (night in ~" + m + " min)" : "  (it's night: get under a roof!)";
+		}
+		if (st.title().equals("Mine 3 cobblestone")) return "  (" + Math.min(3, tracker.count(net.minecraft.world.item.Items.COBBLESTONE)) + "/3)";
+		if (st.title().equals("Gather 20 cobblestone")) return "  (" + Math.min(20, tracker.count(net.minecraft.world.item.Items.COBBLESTONE)) + "/20)";
+		if (st.title().equals("Build stone walls")) return "  (" + Math.min(16, tracker.cobblePlaced()) + "/16)";
+		if (st.title().equals("Climb up high")) return "  (height " + (int) tracker.height() + "/100)";
 		if (st.title().equals("Dig some dirt")) return "  (" + Math.min(10, tracker.count(net.minecraft.world.item.Items.DIRT)) + "/10)";
 		if (st.title().equals("Build walls")) return "  (" + Math.min(8, tracker.dirtPlaced()) + "/8)";
 		if (st.title().equals("Get 3 logs")) return "  (" + Math.min(3, tracker.countLogs()) + "/3)";

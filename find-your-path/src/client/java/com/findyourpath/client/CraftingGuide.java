@@ -73,6 +73,14 @@ public final class CraftingGuide {
 					: "Close this screen (press E) to do this step out in the world.";
 			return new Reading(msg, false, null, null, null);
 		}
+		// recall steps: let them try from memory until they ask for help
+		if (st.recall() && !FindYourPathClient.hintShown()) {
+			if (matches(st.icon(), menu.getSlot(0).getItem()))
+				return new Reading("It worked! Click the " + name(st.icon(), 1) + " on the right to take it.", true, null, null, null);
+			if (matches(st.icon(), menu.getCarried()))
+				return new Reading("Got it! Now click an empty spot in your inventory to put it away.", false, null, null, null);
+			return new Reading("Try it from memory! Stuck? Close this, press G, and tap \"Show me how\".", false, null, null, null);
+		}
 		int size = Ui.gridSize(st.recipe());
 		if (size > n) {
 			return new Reading("This one needs the bigger 3x3 grid. Press E to close, then RIGHT-CLICK your crafting table.", false, null, null, null);
