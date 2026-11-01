@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -69,6 +70,8 @@ public class FindYourPathClient implements ClientModInitializer {
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, KeyMapping.Category.register(id("main"))));
 
 		ClientTickEvents.END_CLIENT_TICK.register(FindYourPathClient::tick);
+		ClientTickEvents.END_CLIENT_TICK.register(BlockGuide::tick);
+		ClientPlayerBlockBreakEvents.AFTER.register((world, player, pos, state) -> BlockGuide.onBlockMined(state));
 		HudElementRegistry.attachElementAfter(VanillaHudElements.OVERLAY_MESSAGE, id("hint"), FindYourPathClient::drawHud);
 
 		// helper panel next to the crafting grid
@@ -90,6 +93,8 @@ public class FindYourPathClient implements ClientModInitializer {
 	static void showHint() { hintShown = true; }
 	public static Tracker tracker() { return tracker; }
 	public static Role returnRole() { return returnRole; }
+	static boolean blockGuideMuted(String key) { return save.blockGuideMuted.contains(key); }
+	static void muteBlockGuide(String key) { save.blockGuideMuted.add(key); save.save(); }
 
 	/** Start a side lesson; the main quest resumes when it's done. */
 	static void startSideLesson(Role side) {

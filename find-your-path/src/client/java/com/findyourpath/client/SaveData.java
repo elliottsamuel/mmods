@@ -27,6 +27,7 @@ public final class SaveData {
 	public Set<String> seenTips = new HashSet<>();
 	public boolean seenDeathInfo;
 	public boolean level1Done;
+	public Set<String> blockGuideMuted = new HashSet<>();   // Block Guide cards turned off with "Don't remind me"
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static Path file() { return FabricLoader.getInstance().getConfigDir().resolve("findyourpath.json"); }
@@ -37,6 +38,7 @@ public final class SaveData {
 			if (d != null) {
 				if (d.worlds == null) d.worlds = new HashMap<>();
 				if (d.seenTips == null) d.seenTips = new HashSet<>();
+				if (d.blockGuideMuted == null) d.blockGuideMuted = new HashSet<>();
 				return d;
 			}
 		} catch (Exception ignored) {
